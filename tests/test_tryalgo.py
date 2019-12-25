@@ -99,16 +99,16 @@ class TestTryalgo(unittest.TestCase):
         return sorted(sorted(group) for group in L)
 
     def test_anagrams(self):
-        L = [("le chien marche vers sa niche et trouve une "
+        L = [(set("le chien marche vers sa niche et trouve une "
               "limace de chine nue pleine de malice "
-              "qui lui fait du charme".split(),
+              "qui lui fait du charme".split()),
               [['nue', 'une'],
                ['limace', 'malice'],
                ['marche', 'charme'],
                ['chien', 'niche', 'chine']]),
-             (["aba", "baa", "abb"], [["aba", "baa"]]),
-             (["aba"], []),
-             ([], [])]
+             ({"aba", "baa", "abb"}, [["aba", "baa"]]),
+             ({"aba"}, []),
+             ({}, [])]
         for words, res in L:
             self.assertEqual(self.unorder(anagrams(words)), self.unorder(res))
 
@@ -1097,8 +1097,8 @@ t##
 
         check_automaton = [[0, 1], [2, 1], [2, 3], [3, 3]]
 
-        def check_positive(sets):
-            order = consecutive_ones_property(sets)
+        def check_positive(sets, universe=None):
+            order = consecutive_ones_property(sets, universe)
             for S in sets:
                 state = 0
                 for i in order:
@@ -1128,6 +1128,7 @@ t##
             {3,4}, {3,4,6}, {3,4,5}, {4,5}, {2,6}, {1,2}, {4,5}, {5,3}]))
         self.assertTrue(check_positive([
             {1,4}, {3,0,2,5,4}, {0,2,5,4}, {2,5}, {0,2}]))
+        self.assertTrue(check_positive([{1,7},{2,10},{1,2,9},{1,2,4,7,8,9,10}], set(range(11))))
 
     def test_polygon_is_simple(self):
         # +---+
@@ -1580,10 +1581,16 @@ t##
 
     def test_union_rectangles(self):
         R = [(0, 0, 3, 5), (1, 3, 2, 4), (0, 2, 5, 4), (4, 0, 6, 2), (7, 2, 10, 3)]
+        Rv2 = [(0, 0, 1, 2), (0, 1, 1, 3)]
+        Rh2 = [(0, 0, 2, 1), (1, 0, 3, 1)]
+        Rid = [(0, 0, 2, 2)] * 2
         for union in [union_rectangles, union_rectangles_naive, union_rectangles_fast, union_rectangles_fastest]:
           self.assertEqual(union([]), 0)
           self.assertEqual(union([(0, 0, 5, 10)]), 50)
           self.assertEqual(union(R), 26)
+          self.assertEqual(union(Rv2), 3)
+          self.assertEqual(union(Rh2), 3)
+          self.assertEqual(union(Rid), 4)
 
     def test_windows_k_distinct(self):
         L = [("abbaca", 2), ("abbaca", 1), ("abbabacccabaabaccacab", 2)]

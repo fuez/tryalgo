@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """\
-c.durr - 2017-2018
+c.durr - 2017-2019
 
 
     Solve the consecutive all ones column problem using PQ-trees
@@ -35,6 +35,7 @@ c.durr - 2017-2018
 
 from collections import deque
 
+
 # pylint: disable=unnecessary-pass
 class IsNotC1P(Exception):
     """The given instance does not have the all consecutive ones property"""
@@ -51,17 +52,17 @@ PARTIAL = 2
 
 # automaton is used for pattern recognition when reducing a Q node
 # -1 represents the result of a forbidden transition
-#             E  F  P
-automaton = [[1, 5, 4],  # 0 initial state
-             [1, 2, 2],  # 1
-             [3, 2, 3],  # 2
-             [3,-1,-1],  # 3
-             [6, 2, 3],  # 4
-             [6, 5, 6],  # 5
-             [6,-1,-1]]  # 6
+#             E   F   P
+automaton = [[1,  5,  4],  # 0 initial state
+             [1,  2,  2],  # 1
+             [3,  2,  3],  # 2
+             [3, -1, -1],  # 3
+             [6,  2,  3],  # 4
+             [6,  5,  6],  # 5
+             [6, -1, -1]]  # 6
 
 
-class PQ_node:
+class PQNode:
 
     def __init__(self, shape, value=None):
         self.shape = shape
@@ -89,7 +90,7 @@ class PQ_node:
         if len(L) == 1:
             self.add(L[0])
         elif len(L) >= 2:
-            x = PQ_node(P_shape)
+            x = PQNode(P_shape)
             x.add_all(L)
             self.add(x)
         # nothing to be done for an empty list L
@@ -114,14 +115,15 @@ class PQ_node:
         else:
             return "[" + ",".join(map(str, self.sons)) + "]"
 
+
 # pylint: disable=too-many-statements
-class PQ_tree:
+class PQTree:
 
     def __init__(self, universe):
-        self.tree = PQ_node(P_shape)
+        self.tree = PQNode(P_shape)
         self.leafs = []
         for i in universe:
-            x = PQ_node(L_shape, value=i)
+            x = PQNode(L_shape, value=i)
             self.tree.add(x)
             self.leafs.append(x)
 
@@ -142,12 +144,12 @@ class PQ_tree:
         queue = deque(self.leafs)
         cleanup = []                      # we don't need to cleanup leafs
         is_key_node = False
-        while queue and not is_key_node:  # while there are nodes to be processed
+        while queue and not is_key_node:  # while there are nodes to process
             x = queue.popleft()
             is_key_node = (x.full_leafs == len(S))
             x.mark = PARTIAL              # default mark
             if x.shape == P_shape:
-                E = []                    # group descendants according to marks
+                E = []                   # group descendants according to marks
                 F = []
                 P = []
                 for y in x.sons:
@@ -195,6 +197,7 @@ class PQ_tree:
                         z = P[0]
                         z.add_group(F)
                         z.add_all(reversed(P[1].sons))
+                        x.add(z)
                     else:
                         raise IsNotC1P
                 else:                      # more than 2 partial descendants
@@ -233,14 +236,15 @@ class PQ_tree:
                 else:
                     x.mark = EMPTY
                     x.full_leafs = 0
-            if not is_key_node:                      # propagate node processing
+            if not is_key_node:               # propagate node processing
                 z = x.parent
-                z.full_leafs += x.full_leafs         # cumulate bottom up full leaf numbers
+                assert z is not None
+                z.full_leafs += x.full_leafs  # cumulate bottom-up full numbers
                 if z.processed_sons == 0:
-                    cleanup.append(z)                # first time considered
+                    cleanup.append(z)         # first time considered
                 z.processed_sons += 1
                 if z.processed_sons == len(z.sons):
-                    queue.append(z)                  # otherwise prune tree at z
+                    queue.append(z)           # otherwise prune tree at z
         for x in cleanup:
             x.full_leafs = 0
             x.processed_sons = 0
@@ -265,7 +269,7 @@ def consecutive_ones_property(sets, universe=None):
         universe = set()
         for S in sets:
             universe |= set(S)
-    tree = PQ_tree(universe)
+    tree = PQTree(universe)
     try:
         for S in sets:
             tree.reduce(S)

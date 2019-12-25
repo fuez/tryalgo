@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """\
 Maximum flow by Edmonds-Karp
-jill-jenn vie et christoph durr - 2015-2018
+jill-jênn vie et christoph dürr - 2015-2019
 """
 
 from collections import deque
@@ -30,8 +30,7 @@ def _augment(graph, capacity, flow, source, target):
                 A[v] = min(A[u], residual)
                 if v == target:
                     break
-                else:
-                    Q.append(v)
+                Q.append(v)
     return (augm_path, A[target])   # augmenting path, min residual cap.
 
 
